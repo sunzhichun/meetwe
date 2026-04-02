@@ -47,7 +47,7 @@ export function GroupSetupScreen({ navigation }: Props) {
   return (
     <Box flex={1} position="relative">
       <ScrollView
-        contentContainerStyle={{ padding: 20, paddingBottom: 220, paddingTop: 98 }}
+        contentContainerStyle={{ padding: 20, paddingBottom: 40, paddingTop: 48 }}
         keyboardShouldPersistTaps="always"
         keyboardDismissMode="on-drag"
       >
@@ -67,34 +67,24 @@ export function GroupSetupScreen({ navigation }: Props) {
           </Box>
 
           <ParticipantEditor />
+
+          <Button
+            mt={5}
+            h="46px"
+            borderRadius={23}
+            bg="#2A2A2A"
+            alignSelf="center"
+            w="75%"
+            maxW="320px"
+            shadow={3}
+            _text={{ color: '#FFFFFF', fontWeight: 'medium', fontSize: 16 }}
+            onPress={onGenerate}
+            isDisabled={isComputing}
+          >
+            生成推荐地
+          </Button>
         </VStack>
       </ScrollView>
-
-      <Box
-        position="absolute"
-        bottom={12}
-        left={0}
-        right={0}
-        px={5}
-        pt={6}
-        pb={2}
-        bg="transparent"
-      >
-        <Button
-          h="52px"
-          borderRadius={26}
-          bg="#2A2A2A"
-          alignSelf="center"
-          w="90%"
-          maxW="353px"
-          shadow={3}
-          _text={{ color: '#FFFFFF', fontWeight: 'medium', fontSize: 16 }}
-          onPress={onGenerate}
-          isDisabled={isComputing}
-        >
-          生成推荐地
-        </Button>
-      </Box>
     </Box>
   );
 }

@@ -19,6 +19,14 @@ export function getAmapKey(): string | null {
   return getEnv('EXPO_PUBLIC_AMAP_KEY') ?? null;
 }
 
+export function getAmapWebJsKey(): string | null {
+  return getEnv('EXPO_PUBLIC_AMAP_WEB_JS_KEY') ?? getAmapKey();
+}
+
+export function getAmapWebSecurityJsCode(): string | null {
+  return getEnv('EXPO_PUBLIC_AMAP_WEB_SECURITY_JS_CODE') ?? null;
+}
+
 export function isAmapConfigured(): boolean {
   return Boolean(getAmapKey());
 }

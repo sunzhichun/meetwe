@@ -121,8 +121,9 @@ export function ParticipantEditor() {
         </Text>
       </Box>
 
-      {session.participants.map((p, idx) => (
-        <GlassCard key={p.id} px={6} py={6}>
+      <VStack space={2.5}>
+        {session.participants.map((p, idx) => (
+          <GlassCard key={p.id} px={6} py={p.collapsed ? 3 : 6}>
           {p.collapsed ? (
             <HStack justifyContent="space-between" alignItems="flex-start">
               <HStack space={2} alignItems="center" flexShrink={1}>
@@ -274,15 +275,16 @@ export function ParticipantEditor() {
               </VStack>
             </>
           )}
-        </GlassCard>
-      ))}
+          </GlassCard>
+        ))}
+      </VStack>
 
       <Button
-        h={12}
+        h={10}
         px={8}
         borderRadius={22}
         bg="#2A2A2A"
-        _text={{ color: '#FFFFFF', fontWeight: '500', fontSize: 12 }}
+        _text={{ color: '#FFFFFF', fontWeight: '500', fontSize: 14 }}
         alignSelf="flex-start"
         onPress={addParticipant}
         isDisabled={session.participants.length >= MAX_PARTICIPANTS}

@@ -13,7 +13,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 export function HomeScreen({ navigation }: Props) {
   return (
     <Box flex={1}>
-      <VStack flex={1} px={8} justifyContent="flex-start" alignItems="center" pt={268}>
+      <VStack flex={1} px={8} justifyContent="flex-start" alignItems="center" pt={180}>
         <VStack w="270px" alignItems="center">
         <Box
           w={85}

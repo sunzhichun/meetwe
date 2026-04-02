@@ -43,7 +43,7 @@ function fitMapToCoords(mapRef: React.RefObject<MapView | null>, coords: MapCoor
  * 结果页地图：约 1/4 屏高预览、全屏缩放、红点 Top5 可点摘要弹窗；与列表共用「筛选后 Top5」数据。
  */
 export function ResultsMapSection(props: ResultsMapSectionProps) {
-  const { participantCoords, participantLabels, mapTopRecommendations } = props;
+  const { participantCoords, participantLabels, mapTopRecommendations, onFullscreenChange } = props;
   const { height: winH } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const previewH = Math.min(240, Math.round(winH * 0.28));
@@ -52,6 +52,10 @@ export function ResultsMapSection(props: ResultsMapSectionProps) {
   const fullRef = useRef<MapView>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const [picked, setPicked] = useState<Recommendation | null>(null);
+
+  useEffect(() => {
+    onFullscreenChange?.(fullscreen);
+  }, [fullscreen, onFullscreenChange]);
 
   const participantPoints = useMemo(
     () => participantCoords.map((c, i) => ({ coord: c, label: participantLabels[i] ?? `${i + 1}` })),

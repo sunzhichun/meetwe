@@ -31,6 +31,7 @@ export function ResultsScreen({ navigation }: Props) {
   const [ratingThreshold, setRatingThreshold] = React.useState(4.0);
   const [ratingSliderValue, setRatingSliderValue] = React.useState(4.0);
   const [mapCollapsed, setMapCollapsed] = React.useState(false);
+  const [mapFullscreen, setMapFullscreen] = React.useState(false);
   const plannedPlaceIds = React.useMemo(() => {
     return new Set(planItems.map((x) => x.recommendation.place.id));
   }, [planItems]);
@@ -57,33 +58,39 @@ export function ResultsScreen({ navigation }: Props) {
           <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
         </Pressable>
       ),
-      headerRight: () => (
-        <Pressable
-          onPress={() => navigation.navigate('PlanList')}
-          accessibilityLabel="查看计划清单"
-          style={{ marginRight: 4 }}
-        >
-          <Box
-            flexDirection="row"
-            alignItems="center"
-            px={3}
-            py={1.5}
-          >
-            <VStack alignItems="center" justifyContent="center" mr={1.5} mt={0.5}>
-              <Box style={{ transform: [{ rotate: '45deg' }] }}>
-                <MaterialCommunityIcons name="pin" size={14} color="#E8672D" />
+      headerRight: mapFullscreen
+        ? undefined
+        : () => (
+            <Pressable
+              onPress={() => navigation.navigate('PlanList')}
+              accessibilityLabel="查看计划清单"
+              style={{ marginRight: 20 }}
+            >
+              <Box
+                flexDirection="row"
+                alignItems="center"
+                bg="white"
+                borderRadius={16}
+                borderWidth={1}
+                borderColor="rgba(0,0,0,0.06)"
+                px={3}
+                py={1.5}
+              >
+                <VStack alignItems="center" justifyContent="center" mr={1.5} mt={0.5}>
+                  <Box style={{ transform: [{ rotate: '45deg' }] }}>
+                    <MaterialCommunityIcons name="pin" size={14} color="#E8672D" />
+                  </Box>
+                  <Text fontSize={9} color="#1A1A1A" fontWeight="bold" lineHeight={10} mt={-1}>
+                    {planItems.length}
+                  </Text>
+                </VStack>
+                <Box w="1px" h={3} bg="rgba(0,0,0,0.1)" mr={1.5} />
+                <Feather name="menu" size={16} color="#4A4A4A" />
               </Box>
-              <Text fontSize={9} color="#1A1A1A" fontWeight="bold" lineHeight={10} mt={-1}>
-                {planItems.length}
-              </Text>
-            </VStack>
-            <Box w="1px" h={3} bg="rgba(0,0,0,0.1)" mr={1.5} />
-            <Feather name="menu" size={16} color="#4A4A4A" />
-          </Box>
-        </Pressable>
-      ),
+            </Pressable>
+          ),
     });
-  }, [navigation, planItems.length]);
+  }, [navigation, planItems.length, mapFullscreen]);
 
   if (!lastResult) {
     return (
@@ -140,7 +147,7 @@ export function ResultsScreen({ navigation }: Props) {
       ) : null}
       <ScrollView
         style={{ width: '100%' }}
-        contentContainerStyle={{ padding: 20, paddingBottom: 110, paddingTop: 122, alignItems: 'stretch' }}
+        contentContainerStyle={{ padding: 20, paddingBottom: 110, paddingTop: 70, alignItems: 'stretch' }}
       >
         <VStack space={5} alignItems="stretch" w="100%">
           {computeError && !isComputing ? (
@@ -224,6 +231,7 @@ export function ResultsScreen({ navigation }: Props) {
                   participantCoords={participantCoords}
                   participantLabels={participantLabels}
                   mapTopRecommendations={mapTopRecommendations}
+                  onFullscreenChange={setMapFullscreen}
                 />
               )}
             </VStack>
