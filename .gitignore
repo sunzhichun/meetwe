@@ -30,7 +30,8 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
+# local env files（含密钥，切勿提交）
+.env
 .env*.local
 
 # typescript

@@ -193,16 +193,18 @@ async function computeRecommendationRound(
   let firstRouteError: string | undefined;
   for (const { place, rating } of commuteCandidates) {
     try {
-      const timesMinutes = await Promise.all(
-        session.participants.map(async (p, idx) => {
-          const from = participantCoords[idx].coordinate;
-          const cityCode = participantMetas[idx]?.cityCode;
-          if (p.transport === 'bus' && !cityCode) {
-            missingCityCodeCount += 1;
-          }
-          return estimateRealCommuteMinutes(from, place.coordinate, p.transport, { cityCode });
-        })
-      );
+      const timesMinutes: number[] = [];
+      for (let idx = 0; idx < session.participants.length; idx++) {
+        const p = session.participants[idx]!;
+        const from = participantCoords[idx]!.coordinate;
+        const cityCode = participantMetas[idx]?.cityCode;
+        if (p.transport === 'bus' && !cityCode) {
+          missingCityCodeCount += 1;
+        }
+        // 串行算路：减少瞬时并发，降低 QPS 超限概率（尤其是 Web 端）
+        const t = await estimateRealCommuteMinutes(from, place.coordinate, p.transport, { cityCode });
+        timesMinutes.push(t);
+      }
 
       const variance = populationVariance(timesMinutes);
       const meanMinutes = arithmeticMean(timesMinutes);

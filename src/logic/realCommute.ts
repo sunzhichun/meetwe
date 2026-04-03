@@ -26,32 +26,61 @@ function secondsToMinutesRounded1(sec: number): number {
   return Math.round((sec / 60) * 10) / 10;
 }
 
+function isQpsExceededError(error: unknown): boolean {
+  const msg = error instanceof Error ? error.message : String(error ?? '');
+  return /CUQPS_HAS_EXCEEDED_THE_LIMIT/i.test(msg);
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function withQpsRetry<T>(task: () => Promise<T>): Promise<T> {
+  // 针对高德 QPS 超限做轻量重试（指数退避）
+  const backoffMs = [280, 720, 1500];
+  let lastErr: unknown;
+  for (let attempt = 0; attempt <= backoffMs.length; attempt++) {
+    try {
+      return await task();
+    } catch (e) {
+      lastErr = e;
+      if (!isQpsExceededError(e) || attempt >= backoffMs.length) {
+        throw e;
+      }
+      await sleep(backoffMs[attempt]!);
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error('路径规划失败');
+}
+
 async function estimateDrivingWalkingCyclingMinutes(
   from: LatLng,
   to: LatLng,
   mode: 'car' | 'walk' | 'bike' | 'ebike'
 ): Promise<number> {
   const apiMode = mode === 'car' ? 'driving' : mode === 'walk' ? 'walking' : mode === 'bike' ? 'bicycling' : 'electrobike';
-  const resp = await planRouteSimple(apiMode, from, to);
-  if (String((resp as any)?.status) !== '1') {
-    throw new Error(`${mode}路径规划失败：${(resp as any)?.info ?? 'unknown'}`);
-  }
+  return withQpsRetry(async () => {
+    const resp = await planRouteSimple(apiMode, from, to);
+    if (String((resp as any)?.status) !== '1') {
+      throw new Error(`${mode}路径规划失败：${(resp as any)?.info ?? 'unknown'}`);
+    }
 
-  // v5/direction/* 返回结构可能因 mode/show_fields 差异而变化，做多路径兼容提取
-  const routeAny = resp.route as any;
-  const p0 = routeAny?.paths?.[0];
-  const durationSeconds =
-    p0?.duration ??
-    p0?.cost?.duration ??
-    routeAny?.duration ??
-    routeAny?.cost?.duration;
-  const sec = parseSeconds(durationSeconds);
-  if (!sec) {
-    const routeKeys = routeAny && typeof routeAny === 'object' ? Object.keys(routeAny).join(',') : 'none';
-    const p0Keys = p0 && typeof p0 === 'object' ? Object.keys(p0).join(',') : 'none';
-    throw new Error(`路径规划耗时缺失：${mode}; routeKeys=${routeKeys}; path0Keys=${p0Keys}`);
-  }
-  return secondsToMinutesRounded1(sec);
+    // v5/direction/* 返回结构可能因 mode/show_fields 差异而变化，做多路径兼容提取
+    const routeAny = resp.route as any;
+    const p0 = routeAny?.paths?.[0];
+    const durationSeconds =
+      p0?.duration ??
+      p0?.cost?.duration ??
+      routeAny?.duration ??
+      routeAny?.cost?.duration;
+    const sec = parseSeconds(durationSeconds);
+    if (!sec) {
+      const routeKeys = routeAny && typeof routeAny === 'object' ? Object.keys(routeAny).join(',') : 'none';
+      const p0Keys = p0 && typeof p0 === 'object' ? Object.keys(p0).join(',') : 'none';
+      throw new Error(`路径规划耗时缺失：${mode}; routeKeys=${routeKeys}; path0Keys=${p0Keys}`);
+    }
+    return secondsToMinutesRounded1(sec);
+  });
 }
 
 function extractTransitDurationsSeconds(resp: any): number[] {
@@ -106,28 +135,30 @@ function extractTransitDurationsSeconds(resp: any): number[] {
 }
 
 async function estimateBusMinutes(from: LatLng, to: LatLng, cityCode: string): Promise<number> {
-  const resp = await planTransitIntegrated(from, to, cityCode, cityCode);
-  if (String((resp as any)?.status) !== '1') {
-    throw new Error(`公交路径规划失败：${(resp as any)?.info ?? 'unknown'}`);
-  }
-  const durations = extractTransitDurationsSeconds(resp);
-  if (durations.length === 0) {
-    const routeKeys =
-      resp?.route && typeof resp.route === 'object' ? Object.keys(resp.route as Record<string, unknown>).join(',') : 'none';
-    const firstTransit = Array.isArray((resp as any)?.route?.transits)
-      ? (resp as any).route.transits[0]
-      : (resp as any)?.route?.transits;
-    const transitKeys =
-      firstTransit && typeof firstTransit === 'object'
-        ? Object.keys(firstTransit as Record<string, unknown>).join(',')
-        : 'none';
-    const routePreview = JSON.stringify((resp as any)?.route ?? {}).slice(0, 260);
-    throw new Error(
-      `公交路径规划耗时缺失; routeKeys=${routeKeys}; transitKeys=${transitKeys}; routePreview=${routePreview}`
-    );
-  }
-  const sec = Math.min(...durations);
-  return secondsToMinutesRounded1(sec);
+  return withQpsRetry(async () => {
+    const resp = await planTransitIntegrated(from, to, cityCode, cityCode);
+    if (String((resp as any)?.status) !== '1') {
+      throw new Error(`公交路径规划失败：${(resp as any)?.info ?? 'unknown'}`);
+    }
+    const durations = extractTransitDurationsSeconds(resp);
+    if (durations.length === 0) {
+      const routeKeys =
+        resp?.route && typeof resp.route === 'object' ? Object.keys(resp.route as Record<string, unknown>).join(',') : 'none';
+      const firstTransit = Array.isArray((resp as any)?.route?.transits)
+        ? (resp as any).route.transits[0]
+        : (resp as any)?.route?.transits;
+      const transitKeys =
+        firstTransit && typeof firstTransit === 'object'
+          ? Object.keys(firstTransit as Record<string, unknown>).join(',')
+          : 'none';
+      const routePreview = JSON.stringify((resp as any)?.route ?? {}).slice(0, 260);
+      throw new Error(
+        `公交路径规划耗时缺失; routeKeys=${routeKeys}; transitKeys=${transitKeys}; routePreview=${routePreview}`
+      );
+    }
+    const sec = Math.min(...durations);
+    return secondsToMinutesRounded1(sec);
+  });
 }
 
 /**

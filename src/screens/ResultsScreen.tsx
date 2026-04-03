@@ -160,7 +160,6 @@ export function ResultsScreen({ navigation }: Props) {
               </Text>
             </Box>
           ) : null}
-
           {/* 模块A：评分筛选器 */}
           <Box
             bg="rgba(181,222,255,0.40)"

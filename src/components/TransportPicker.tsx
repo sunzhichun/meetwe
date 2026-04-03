@@ -31,9 +31,12 @@ export function TransportPicker(props: {
         };
 
   return (
-    <VStack space={2} alignItems="stretch">
-      <HStack space={2} flexWrap="wrap">
+    <VStack space={3} alignItems="stretch" w="100%">
+      {/* 第一行：驾车 / 公共交通 / 步行，均分宽度保持单行 */}
+      <HStack w="100%" space={2} alignItems="stretch">
         <Button
+          flex={1}
+          minW={0}
           size="sm"
           borderRadius="2xl"
           variant={props.value === 'car' ? 'solid' : 'outline'}
@@ -45,6 +48,8 @@ export function TransportPicker(props: {
           驾车
         </Button>
         <Button
+          flex={1}
+          minW={0}
           size="sm"
           borderRadius="2xl"
           variant={props.value === 'bus' ? 'solid' : 'outline'}
@@ -56,6 +61,8 @@ export function TransportPicker(props: {
           公共交通
         </Button>
         <Button
+          flex={1}
+          minW={0}
           size="sm"
           borderRadius="2xl"
           variant={props.value === 'walk' ? 'solid' : 'outline'}
@@ -68,8 +75,10 @@ export function TransportPicker(props: {
         </Button>
       </HStack>
 
-      <HStack alignItems="center" space={2}>
+      {/* 第二行：骑车 +（展开时）自行车 / 电动车，同一行 */}
+      <HStack w="100%" alignItems="center" space={2} flexWrap="nowrap">
         <Button
+          flexShrink={0}
           size="sm"
           borderRadius="2xl"
           variant={isBike ? 'solid' : 'outline'}
@@ -84,9 +93,11 @@ export function TransportPicker(props: {
           {bikeExpanded ? '骑车 <' : '骑车 >'}
         </Button>
         {bikeExpanded ? (
-          <HStack alignItems="center" space={2}>
-            <Box w="1px" h={6} bg="rgba(0,0,0,0.1)" />
+          <>
+            <Box w="1px" h={6} bg="rgba(0,0,0,0.1)" flexShrink={0} />
             <Button
+              flex={1}
+              minW={0}
               size="sm"
               borderRadius="2xl"
               variant={props.value === 'bike' ? 'solid' : 'outline'}
@@ -98,6 +109,8 @@ export function TransportPicker(props: {
               自行车
             </Button>
             <Button
+              flex={1}
+              minW={0}
               size="sm"
               borderRadius="2xl"
               variant={props.value === 'ebike' ? 'solid' : 'outline'}
@@ -108,7 +121,7 @@ export function TransportPicker(props: {
             >
               电动车
             </Button>
-          </HStack>
+          </>
         ) : null}
       </HStack>
     </VStack>
