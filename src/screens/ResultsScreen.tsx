@@ -147,7 +147,7 @@ export function ResultsScreen({ navigation }: Props) {
       ) : null}
       <ScrollView
         style={{ width: '100%' }}
-        contentContainerStyle={{ padding: 20, paddingBottom: 110, paddingTop: 70, alignItems: 'stretch' }}
+        contentContainerStyle={{ padding: 20, paddingBottom: 110, paddingTop: 20, alignItems: 'stretch' }}
       >
         <VStack space={5} alignItems="stretch" w="100%">
           {computeError && !isComputing ? (

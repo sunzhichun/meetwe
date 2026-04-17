@@ -17,7 +17,7 @@ export function createNewParticipant(labelIndex: number): Participant {
     id: `p_${Date.now().toString(16)}_${Math.random().toString(16).slice(2)}`,
     displayName: `参与者${labelIndex}`,
     addressText: '',
-    transport: 'bus',
+    transport: 'car',
   };
 }
 

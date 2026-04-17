@@ -23,7 +23,10 @@ export function AppNavigator() {
       screenOptions={{
         headerShadowVisible: false,
         headerTitleAlign: 'center',
-        headerTransparent: true,
+        headerTransparent: false,
+        headerStyle: {
+          backgroundColor: '#F9F8F6',
+        },
         headerTintColor: '#1A1A1A',
         headerTitleStyle: {
           fontWeight: '700',

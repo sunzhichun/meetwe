@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, useWindowDimensions } from 'react-native';
+import { Alert, Platform, useWindowDimensions } from 'react-native';
 import { Box, Button, Pressable, ScrollView, Text, useToast, VStack } from 'native-base';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,6 +12,14 @@ import { useMeetWe } from '../context/MeetWeContext';
 type Props = NativeStackScreenProps<RootStackParamList, 'GroupSetup'>;
 
 const COMPUTING_HINT = '全力计算中，请耐心等待一会哦';
+
+function showNotice(title: string, message: string) {
+  if (Platform.OS === 'web') {
+    window.alert(message);
+    return;
+  }
+  Alert.alert(title, message);
+}
 
 /**
  * 聚会设置页：输入参与者 + 选择约会类型 + 生成推荐
@@ -36,6 +44,12 @@ export function GroupSetupScreen({ navigation }: Props) {
   }, [navigation]);
 
   const onGenerate = async () => {
+    const hasUnconfirmedParticipant = session.participants.some((p) => !p.collapsed);
+    if (hasUnconfirmedParticipant) {
+      showNotice('提示', '请先确认并保存参与者信息');
+      return;
+    }
+
     toast.show({
       id: 'meetwe-computing-hint',
       duration: null,
@@ -67,19 +81,19 @@ export function GroupSetupScreen({ navigation }: Props) {
         e instanceof Error && e.message
           ? e.message
           : computeError || '请检查网络、API Key、地址输入是否有效';
-      Alert.alert('生成推荐失败', msg);
+      showNotice('生成推荐失败', msg);
     }
   };
 
   return (
     <Box flex={1} position="relative">
       <ScrollView
-        contentContainerStyle={{ padding: 20, paddingBottom: 40, paddingTop: 48 }}
+        contentContainerStyle={{ padding: 20, paddingBottom: 40, paddingTop: 12 }}
         keyboardShouldPersistTaps="always"
         keyboardDismissMode="on-drag"
       >
         <VStack space={6} pt={0}>
-          <Text fontSize="xl" fontWeight="bold" color="#1A1A1A" style={{ transform: [{ translateY: 16 }] }}>
+          <Text fontSize="xl" fontWeight="bold" color="#1A1A1A">
             去哪
           </Text>
           <Box borderRadius={20} overflow="hidden">

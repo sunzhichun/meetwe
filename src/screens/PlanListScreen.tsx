@@ -33,7 +33,7 @@ export function PlanListScreen({ navigation }: Props) {
 
   return (
     <Box flex={1}>
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 28, paddingTop: 80 }}>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 28, paddingTop: 20 }}>
         <VStack space={4} alignItems="stretch" w="100%">
           {planItems.length === 0 ? (
             <Box

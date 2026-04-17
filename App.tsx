@@ -7,6 +7,7 @@ import { MeetWeProvider } from './src/context/MeetWeContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { meetWeTheme } from './src/theme';
 import { AppBackground } from './src/components/AppBackground';
+import { WebDesktopDeviceFrame } from './src/components/WebDesktopDeviceFrame';
 
 /**
  * App 根组件
@@ -31,12 +32,14 @@ export default function App() {
     <SafeAreaProvider>
       <NativeBaseProvider theme={meetWeTheme}>
         <MeetWeProvider>
-          <AppBackground>
-            <NavigationContainer theme={navTheme}>
-              <AppNavigator />
-              <StatusBar style="dark" />
-            </NavigationContainer>
-          </AppBackground>
+          <WebDesktopDeviceFrame>
+            <AppBackground>
+              <NavigationContainer theme={navTheme}>
+                <AppNavigator />
+                <StatusBar style="dark" />
+              </NavigationContainer>
+            </AppBackground>
+          </WebDesktopDeviceFrame>
         </MeetWeProvider>
       </NativeBaseProvider>
     </SafeAreaProvider>
